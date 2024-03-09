@@ -1,4 +1,4 @@
-import { PixabayAPI } from './js/pixabay-api';
+// import { PixabayAPI } from './js/pixabay-api';
 import iziToast from "izitoast";
 import "izitoast/dist/css/iziToast.min.css";
 import { displayImages } from './js/render-functions';
@@ -36,6 +36,14 @@ async function fetchImages(query) {
         }
 
         displayImages(images);
+         if (images.length === 0) {
+            iziToast.show({
+                title: 'Error',
+                message: 'Sorry, there are no images matching your search query. Please try again!',
+                color: 'red',
+            });
+            return;
+        }
         showLoadMoreButton();
         checkIfEndOfResults(totalHits);
 
@@ -86,25 +94,18 @@ function displayEndOfResultsMessage() {
 }
 
 async function smoothScroll(distance) {
-    const startY = window.scrollY;
-    const startTime = performance.now();
-
     return new Promise((resolve) => {
-        function scroll() {
-            const currentTime = performance.now();
-            const time = Math.min(1, (currentTime - startTime) / 500);
+        window.scrollBy({
+            top: distance,
+            behavior: 'smooth',
+          
+        });
 
-            window.scroll(0, easeInOutQuad(startY, distance, time));
-
-            if (time < 1) requestAnimationFrame(scroll);
-            else resolve();
-        }
-
-        function easeInOutQuad(start, end, time) {
-            return start + (1 - Math.cos(Math.PI * time)) * (end - start) / 2;
-        }
-
-        requestAnimationFrame(scroll);
+        window.addEventListener('scroll', function scrollHandler() {
+           
+            window.removeEventListener('scroll', scrollHandler);
+            resolve();
+        });
     });
 }
 
